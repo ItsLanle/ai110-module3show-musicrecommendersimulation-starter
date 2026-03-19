@@ -1,14 +1,17 @@
 import csv
+from collections import defaultdict
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
 # ---------------------------------------------------------------------------
 # Weights — must sum to 1.0
+# EXPERIMENT: energy doubled (0.20→0.40), genre halved (0.35→0.175).
+#             mood reduced 0.25→0.225 to keep total = 1.0.
 # ---------------------------------------------------------------------------
 WEIGHTS = {
-    "genre":        0.35,
-    "mood":         0.25,
-    "energy":       0.20,
+    "genre":        0.175,  # CHANGED: halved from 0.35
+    "mood":         0.225,  # CHANGED: trimmed from 0.25 to keep sum = 1.0
+    "energy":       0.40,   # CHANGED: doubled from 0.20
     "valence":      0.10,
     "tempo_bpm":    0.05,
     "danceability": 0.05,
@@ -159,7 +162,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 
-def build_explanation(song: Dict, user_prefs: Dict) -> str:
+def build_explanation(song: Dict, user_prefs: Dict, penalized: bool = False) -> str:
     """Build a human-readable explanation of why a song was recommended."""
     reasons = []
 
@@ -179,24 +182,65 @@ def build_explanation(song: Dict, user_prefs: Dict) -> str:
     if tempo_diff <= 0.15:
         reasons.append(f"tempo close ({song['tempo_bpm']:.0f} BPM)")
 
+    if penalized:
+        reasons.append("diversity penalty applied")
+
     if not reasons:
         return "general match"
     return ", ".join(reasons)
 
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
+def recommend_songs(
+    user_prefs: Dict,
+    songs: List[Dict],
+    k: int = 5,
+    artist_penalty: float = 1.0,
+    genre_penalty: float = 1.0,
+) -> List[Tuple[Dict, float, str]]:
     """
     Functional implementation of the recommendation logic.
     Required by src/main.py
+
+    artist_penalty / genre_penalty: multiplier applied each time a song's
+    artist or genre is already represented in the selected results.
+    1.0 = no penalty (default); 0.5 = halve the score on each repeat.
     """
-    # Step 1 & 2: score every song using a list comprehension
-    scored = [
-        (song, score_song(song, user_prefs))
-        for song in songs
+    # Step 1: score every song once
+    candidates = [(song, score_song(song, user_prefs)) for song in songs]
+
+    # Step 2: greedy selection with compounding diversity penalty
+    selected = []
+    artist_counts: Dict[str, int] = defaultdict(int)
+    genre_counts:  Dict[str, int] = defaultdict(int)
+
+    for _ in range(min(k, len(candidates))):
+        # Apply accumulated penalties to every remaining candidate
+        penalized_candidates = [
+            (song, base * (artist_penalty ** artist_counts[song["artist"]])
+                       * (genre_penalty  ** genre_counts[song["genre"]]))
+            for song, base in candidates
+        ]
+
+        # Pick the highest effective score
+        best_song, best_score = max(penalized_candidates, key=lambda x: x[1])
+
+        # Record selection and update counts
+        selected.append((best_song, best_score))
+        artist_counts[best_song["artist"]] += 1
+        genre_counts[best_song["genre"]]   += 1
+
+        # Remove the selected song from the candidate pool
+        candidates = [(s, sc) for s, sc in candidates if s["id"] != best_song["id"]]
+
+    # Step 3: return (song, effective_score, explanation) tuples
+    return [
+        (
+            song,
+            round(score, 4),
+            build_explanation(
+                song, user_prefs,
+                penalized=(round(score, 4) < score_song(song, user_prefs)),
+            ),
+        )
+        for song, score in selected
     ]
-
-    # Step 3: sort by score descending using a lambda key function
-    scored.sort(key=lambda x: x[1], reverse=True)
-
-    # Step 4: return top k as (song, score, explanation) tuples
-    return [(song, score, build_explanation(song, user_prefs)) for song, score in scored[:k]]

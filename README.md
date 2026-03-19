@@ -91,6 +91,60 @@ The top song recommendations for the default "pop/happy" profile:
 
 
 
+---
+
+## Phase 4: Stress Test Results
+
+Six user profiles were run against the 20-song catalog to evaluate the scoring logic — three standard and three adversarial edge cases.
+
+### Profile 1 — High-Energy Pop
+`genre: pop | mood: happy | energy: 0.90 | tempo: 128 BPM`
+Expected strong match on genre + mood. **Sunrise City** scored 1.00 with all signals aligned.
+
+![High-Energy Pop](images/profile1_high_energy_pop.png)
+
+---
+
+### Profile 2 — Chill Lofi
+`genre: lofi | mood: chill | energy: 0.35 | tempo: 75 BPM`
+Both lofi songs (**Library Rain**, **Midnight Coding**) tied at 1.00. Related-mood partial credit correctly surfaced **Focus Flow** at #3.
+
+![Chill Lofi](images/profile2_chill_lofi.png)
+
+---
+
+### Profile 3 — Deep Intense Rock
+`genre: rock | mood: intense | energy: 0.92 | tempo: 150 BPM`
+**Storm Runner** was the only exact rock/intense match and scored 1.00. Remaining slots filled by related-mood electronic tracks — expected given the small catalog.
+
+![Deep Intense Rock](images/profile3_intense_rock.png)
+
+---
+
+### Profile 4 (EDGE) — Conflicted: High Energy + Moody Mood
+`genre: electronic | mood: moody | energy: 0.95 | tempo: 140 BPM`
+Genre and mood pulled in opposite directions. Electronic tracks won on genre + energy; moody tracks won on mood alone. No crash or nonsense output.
+
+![Conflicted Edge Case](images/profile4_edge_conflicted.png)
+
+---
+
+### Profile 5 (EDGE) — Unknown Genre (reggaeton — not in dataset)
+`genre: reggaeton | mood: happy | energy: 0.80 | tempo: 100 BPM`
+Zero genre matches. The system fell back to mood + energy signals cleanly, returning three happy songs around 0.65. Score ceiling dropped as expected.
+
+![Unknown Genre Edge Case](images/profile5_edge_unknown_genre.png)
+
+---
+
+### Profile 6 (EDGE) — Extreme BPM (target 200 BPM)
+`genre: rock | mood: intense | energy: 0.90 | tempo: 200 BPM`
+No song reached 200 BPM. Tempo contributed near-zero for every track, but genre + mood + energy still ranked **Storm Runner** at 1.00 — the scorer didn't break under extreme values.
+
+![Extreme BPM Edge Case](images/profile6_edge_extreme_bpm.png)
+
+---
+
 ## Getting Started
 
 ### Setup
