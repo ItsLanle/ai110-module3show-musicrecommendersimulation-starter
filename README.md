@@ -83,6 +83,13 @@ Only uses stated preferences – If a user doesn’t mention something (like lo-
 Small dataset issues – If the dataset has few songs in certain genres or moods, users with those preferences may get weaker recommendations.
 
 ---
+### Screenshot:
+
+The top song recommendations for the default "pop/happy" profile:
+
+![CLI Screenshot](images/MR_Screenshot.png)
+
+
 
 ## Getting Started
 
