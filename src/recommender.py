@@ -58,15 +58,41 @@ class Recommender:
     Required by tests/test_recommender.py
     """
     def __init__(self, songs: List[Song]):
+        """Store the song catalog for use in recommendations."""
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
+        """Return the top k songs ranked by score for the given user profile."""
+        user_prefs = {
+            "favorite_genre":      user.favorite_genre,
+            "favorite_mood":       user.favorite_mood,
+            "target_energy":       user.target_energy,
+            "target_valence":      0.5,
+            "target_tempo_bpm":    120.0,
+            "target_danceability": 0.5,
+        }
+        scored = sorted(
+            self.songs,
+            key=lambda song: score_song(vars(song), user_prefs),
+            reverse=True,
+        )
+        return scored[:k]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
+        """Return a sentence explaining why a song was recommended to a user."""
+        reasons = []
+        if song.genre == user.favorite_genre:
+            reasons.append(f"genre matches ({song.genre})")
+        if song.mood == user.favorite_mood:
+            reasons.append(f"mood matches ({song.mood})")
+        elif are_moods_related(song.mood, user.favorite_mood):
+            reasons.append(f"mood is related ({song.mood} ~ {user.favorite_mood})")
+        energy_diff = abs(song.energy - user.target_energy)
+        if energy_diff <= 0.2:
+            reasons.append(f"energy is close ({song.energy:.2f} vs {user.target_energy:.2f})")
+        if not reasons:
+            return f"{song.title} by {song.artist} is a general recommendation."
+        return f"{song.title} by {song.artist}: {', '.join(reasons)}."
 
 def are_moods_related(mood_a: str, mood_b: str) -> bool:
     """Return True if two moods belong to the same mood group."""
@@ -133,6 +159,31 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 
+def build_explanation(song: Dict, user_prefs: Dict) -> str:
+    """Build a human-readable explanation of why a song was recommended."""
+    reasons = []
+
+    if song["genre"] == user_prefs["favorite_genre"]:
+        reasons.append(f"genre matched ({song['genre']})")
+
+    if song["mood"] == user_prefs["favorite_mood"]:
+        reasons.append(f"mood matched ({song['mood']})")
+    elif are_moods_related(song["mood"], user_prefs["favorite_mood"]):
+        reasons.append(f"related mood ({song['mood']} ~ {user_prefs['favorite_mood']})")
+
+    energy_diff = abs(song["energy"] - user_prefs["target_energy"])
+    if energy_diff <= 0.2:
+        reasons.append(f"energy close ({song['energy']:.2f} vs {user_prefs['target_energy']:.2f})")
+
+    tempo_diff = abs(song["tempo_bpm"] - user_prefs["target_tempo_bpm"]) / 200
+    if tempo_diff <= 0.15:
+        reasons.append(f"tempo close ({song['tempo_bpm']:.0f} BPM)")
+
+    if not reasons:
+        return "general match"
+    return ", ".join(reasons)
+
+
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
     Functional implementation of the recommendation logic.
@@ -148,4 +199,4 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
     scored.sort(key=lambda x: x[1], reverse=True)
 
     # Step 4: return top k as (song, score, explanation) tuples
-    return [(song, score, f"{song['title']} scored {score}") for song, score in scored[:k]]
+    return [(song, score, build_explanation(song, user_prefs)) for song, score in scored[:k]]
