@@ -9,3 +9,14 @@ id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
 8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22
 9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78
 10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35
+
+11,Lagos Sunrise,Burna Collective,afrobeat,happy,0.88,112,0.90,0.91,0.14
+12,Blue Danube Dreams,Vienna Strings,classical,relaxed,0.31,66,0.74,0.22,0.97
+13,Dust & Denim,Colt Rivers,country,melancholic,0.54,94,0.45,0.58,0.82
+14,Neon Jungle,Synthara,electronic,energetic,0.92,140,0.62,0.87,0.04
+15,Falling Leaves,Mara June,indie,melancholic,0.44,85,0.38,0.50,0.73
+16,Mountain Gospel,The Hollow Pines,folk,inspirational,0.58,102,0.78,0.61,0.91
+17,Sakura Rain,Yuki Tanaka,classical,relaxed,0.27,58,0.80,0.18,0.98
+18,Frequency Rise,Bass Theorem,electronic,energetic,0.95,145,0.55,0.93,0.02
+19,Red Clay Road,Savannah Blue,country,upbeat,0.69,108,0.82,0.74,0.66
+20,Midnight Kora,Djelimady,afrobeat,moody,0.71,98,0.61,0.83,0.38

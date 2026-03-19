@@ -5,6 +5,8 @@
 Give your model a short, descriptive name.  
 Example: **VibeFinder 1.0**  
 
+Model name:MusicMuse
+
 ---
 
 ## 2. Intended Use  
@@ -14,8 +16,11 @@ Describe what your recommender is designed to do and who it is for.
 Prompts:  
 
 - What kind of recommendations does it generate  
+    It generates similar artists and songs in favorite or similar genres.
 - What assumptions does it make about the user  
+    Their favorite artist, favorite genre, potential artist based off current fav artistP and genre.
 - Is this for real users or classroom exploration  
+    depends on how well I do.
 
 ---
 
@@ -25,8 +30,10 @@ Explain your scoring approach in simple language.
 
 Prompts:  
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
+- What features of each song are used (genre, energy, mood, etc.) 
+    Genre, mood, energy, alence, and danceability.
+- What user preferences are considered 
+    
 - How does the model turn those into a score  
 - What changes did you make from the starter logic  
 

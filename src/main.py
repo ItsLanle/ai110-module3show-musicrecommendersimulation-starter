@@ -16,7 +16,25 @@ def main() -> None:
     songs = load_songs("data/songs.csv") 
 
     # Starter example profile
-    user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    user_prefs = {
+    "favorite_genre":    "afrobeat",
+    "acceptable_genres": ["afrobeat", "dancehall", "r&b", "pop"],
+    "disliked_genres":   ["classical", "rock"],
+    "favorite_mood":     "happy",
+    "acceptable_moods":  ["happy", "upbeat", "energetic"],
+    "context":           "gym",
+
+    "target_energy":       0.85,
+    "energy_min":          0.70,       # hard floor — nothing below this
+    "target_tempo_bpm":    110.0,
+    "tempo_range":         (95, 135),  # acceptable BPM window
+    "target_valence":      0.80,
+    "target_danceability": 0.88,
+    "target_acousticness": 0.20,
+
+    "discovery_factor":    0.3,        # somewhat open to new genres
+}
+
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
 

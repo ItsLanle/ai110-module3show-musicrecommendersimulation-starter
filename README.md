@@ -19,15 +19,68 @@ Replace this paragraph with your own summary of what your version does.
 
 Explain your design in plain language.
 
+  - i believe that real world recommendations work by analyzing data such as a persons listening history, favorites, and search history. From this a pattern is created to recognize what a user gravitates towards the most and recoomends that, while also using tha information to recomend new songs/genres, etc. My version will prioritize creating recommendation based on explicit user preferences instead of analyzing user patterns over time for more efficiency.
+
 Some prompts to answer:
 
 - What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
+  - id, title, artist, genre, mood, energy, tempo_bpm, valence, danceability, acousticness
 - What information does your `UserProfile` store
+  - favorite_genre, favorite_mood, target_energy, likes_acoustic
 - How does your `Recommender` compute a score for each song
+  - The recommender matches UserProfile preferences against Song features — favorite_genre → genre, favorite_mood → mood, target_energy → energy, and likes_acoustic → acousticness.
 - How do you choose which songs to recommend
+   User Profile
+     │
+     ▼
+Score every song  ──►  [0.87, 0.45, 0.91, 0.33, 0.72, ...]
+     │
+     ▼
+Sort by score (highest first)
+     │
+     ▼
+Return top k songs
 
 You can include a simple diagram or bullet list if helpful.
+------------------------------
+Algorithm Recipe:
+
+Step 1 — Load
+Load songs from data/songs.csv into a list of dictionaries.
+
+Step 2 — Score Songs
+Give each song a score based on how well it matches the user’s preferences.
+
+Attribute	Weight	How it Works
+Genre	35%	Exact match = full points
+Mood	25%	Exact match = full points, related mood = half
+Energy	20%	Closer energy to the user’s target = more points
+Valence	10%	Closer positivity level = more points
+Tempo	5%	Tempo closer to the target = more points
+Danceability	5%	Closer danceability score = more points
+
+Mood Groups (partial credit)
+Moods in the same group count as related.
+happy: happy, upbeat
+chill: chill, relaxed, focused
+intense: intense, energetic
+moody: moody, melancholic
+
+Step 3 — Rank
+Sort songs from highest score to lowest and return the top k songs (default: 5).
+
+Step 4 — Explain
+Show why each song was recommended (which attributes matched).
+
+
+Potential Biases:
+
+Genre dominates – Since genre is weighted the most (35%), songs from other genres may rank lower even if they match mood or energy well.
+
+Strict numeric targets – The system favors songs closest to one value (like energy 0.85), even though users might like a wider range.
+
+Only uses stated preferences – If a user doesn’t mention something (like lo-fi), the system won’t recommend it.
+Small dataset issues – If the dataset has few songs in certain genres or moods, users with those preferences may get weaker recommendations.
 
 ---
 
